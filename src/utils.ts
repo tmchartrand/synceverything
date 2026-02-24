@@ -1,4 +1,5 @@
 import * as os from "os";
+import { join } from "path";
 import { Uri, workspace, FileSystemError } from "vscode";
 
 import { logger } from "./extension";
@@ -38,9 +39,15 @@ export async function pathExists(path: string): Promise<boolean> {
 
 export const findConfigFile = async (
   appName: string,
-  file: string
+  file: string,
+  preferredUserDir?: string
 ): Promise<string> => {
-  const possiblePaths = getConfigPaths(appName, file);
+  const possiblePaths = preferredUserDir
+    ? [
+        join(preferredUserDir, file),
+        ...getConfigPaths(appName, file),
+      ]
+    : getConfigPaths(appName, file);
   for (const path of possiblePaths) {
     if (await pathExists(path)) {
       return Uri.file(path).fsPath;
